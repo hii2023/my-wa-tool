@@ -2,7 +2,7 @@
   "name": "WhatsApp Quick Reach",
   "short_name": "WA Reach",
   "description": "Send WhatsApp templates with one tap",
-  "start_url": "/index.html",
+  "start_url": "/my-wa-tool/index.html",
   "display": "standalone",
   "background_color": "#075e54",
   "theme_color": "#075e54",
