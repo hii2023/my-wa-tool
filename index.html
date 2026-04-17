@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WA Reach">
+  <meta name="theme-color" content="#075e54">
+  <title>WhatsApp Quick Reach</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wa-dark:   #075e54;
+      --wa-mid:    #128c7e;
+      --wa-green:  #25D366;
+      --wa-light:  #dcf8c6;
+      --bg:        #f0f4f0;
+      --card:      #ffffff;
+      --border:    #e8e8e8;
+      --text:      #1a1a1a;
+      --muted:     #888;
+      --danger:    #ff4d4d;
+      --radius:    14px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ---- Top bar ---- */
+    .topbar {
+      background: linear-gradient(135deg, var(--wa-dark), var(--wa-mid));
+      padding: 16px 20px 14px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-icon { width: 34px; height: 34px; flex-shrink: 0; }
+
+    .topbar-title { font-size: 16px; font-weight: 800; color: white; letter-spacing: -0.01em; }
+    .topbar-sub   { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+
+    .topbar-settings {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none; color: white; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .topbar-settings:active { background: rgba(255,255,255,0.3); }
+
+    /* ---- Screens ---- */
+    .screen { display: none; padding: 16px 16px calc(16px + var(--safe-bottom)); }
+    .screen.active { display: block; }
+
+    /* ---- Phone input screen ---- */
+    .phone-hero {
+      background: linear-gradient(160deg, var(--wa-dark) 0%, var(--wa-mid) 100%);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .phone-hero::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .phone-hero-title {
+      font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .phone-input-wrap {
+      display: flex; gap: 10px; align-items: center;
+    }
+
+    .phone-input {
+      flex: 1;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      outline: none;
+      letter-spacing: 0.04em;
+    }
+    .phone-input::placeholder { color: rgba(255,255,255,0.4); font-weight: 400; font-size: 14px; }
+    .phone-input:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.2); }
+
+    .paste-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      white-space: nowrap;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .paste-btn:active { background: rgba(255,255,255,0.35); transform: scale(0.97); }
+
+    .name-amount-row {
+      display: flex; gap: 10px; margin-top: 12px;
+    }
+    .na-field {
+      flex: 1; display: flex; flex-direction: column; gap: 4px;
+    }
+    .na-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.06em; }
+    .na-input {
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      outline: none;
+    }
+    .na-input::placeholder { color: rgba(255,255,255,0.35); font-weight: 400; }
+    .na-input:focus { border-color: rgba(255,255,255,0.5); }
+
+    /* ---- Section label ---- */
+    .section-label {
+      font-size: 11px; font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.07em;
+      margin-bottom: 10px; margin-top: 4px;
+    }
+
+    /* ---- Category chips ---- */
+    .cat-scroll {
+      display: flex; gap: 7px; overflow-x: auto;
+      padding-bottom: 4px; margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .cat-scroll::-webkit-scrollbar { display: none; }
+
+    .cat-chip {
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: white; font-size: 12px; font-weight: 600;
+      color: var(--muted); cursor: pointer; white-space: nowrap;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .cat-chip.active { background: var(--wa-green); border-color: var(--wa-green); color: white; }
+
+    /* ---- Template cards ---- */
+    .template-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+
+    .template-card {
+      background: white; border-radius: var(--radius);
+      border: 2px solid var(--border);
+      padding: 13px 15px; cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .template-card:active { transform: scale(0.98); }
+    .template-card.selected {
+      border-color: var(--wa-green);
+      background: #f0fdf4;
+      box-shadow: 0 0 0 3px rgba(37,211,102,0.12);
+    }
+
+    .tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+    .tc-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .tc-cat  { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #e8f4f8; color: #0a6e8a; font-weight: 700; }
+    .tc-preview { font-size: 12px; color: var(--muted); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    /* ---- Image picker ---- */
+    .img-picker-row {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+
+    .img-thumb-card {
+      width: calc(25% - 8px);
+      min-width: 72px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      overflow: hidden; cursor: pointer;
+      transition: all 0.15s; background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      position: relative;
+    }
+    .img-thumb-card:active { transform: scale(0.95); }
+    .img-thumb-card.selected {
+      border-color: var(--wa-green);
+      box-shadow: 0 0 0 3px rgba(37,211,102,0.2);
+    }
+
+    .img-thumb-card img {
+      width: 100%; height: 64px; object-fit: cover; display: block;
+    }
+    .img-thumb-name {
+      font-size: 10px; font-weight: 700; text-align: center;
+      padding: 4px 4px 5px; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .img-tick {
+      position: absolute; top: 4px; right: 4px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--wa-green); color: white;
+      font-size: 11px; font-weight: 800;
+      display: none; align-items: center; justify-content: center;
+    }
+    .img-thumb-card.selected .img-tick { display: flex; }
+
+    /* ---- Message preview box ---- */
+    .msg-preview-wrap {
+      background: white; border-radius: var(--radius);
+      border: 2px solid var(--border);
+      overflow: hidden; margin-bottom: 16px;
+    }
+    .msg-preview-label {
+      background: #f8f8f8; padding: 8px 14px;
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    #msg-textarea {
+      width: 100%; border: none; outline: none;
+      padding: 12px 14px; font-size: 13px; line-height: 1.6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text); resize: none; min-height: 90px;
+      background: white;
+    }
+
+    /* ---- Image status bar ---- */
+    .img-status {
+      display: none;
+      background: #e8faf0; border-radius: 10px;
+      padding: 9px 13px; margin-bottom: 14px;
+      font-size: 12px; color: var(--wa-dark); font-weight: 600;
+      align-items: center; gap: 8px;
+    }
+    .img-status.show { display: flex; }
+
+    /* ---- Send button ---- */
+    .send-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--wa-green), var(--wa-mid));
+      color: white; border: none; border-radius: 14px;
+      padding: 16px; font-size: 15px; font-weight: 800;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.18s; letter-spacing: -0.01em;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.35);
+      margin-bottom: calc(12px + var(--safe-bottom));
+    }
+    .send-btn:active { transform: scale(0.97); box-shadow: none; }
+    .send-btn:disabled { opacity: 0.4; pointer-events: none; }
+    .send-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* ---- Settings screen ---- */
+    .settings-section { margin-bottom: 24px; }
+    .settings-section-title {
+      font-size: 13px; font-weight: 800; color: var(--wa-dark);
+      margin-bottom: 12px; letter-spacing: -0.01em;
+    }
+
+    /* Image slots grid */
+    .img-slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+    .img-slot {
+      background: white; border: 2px dashed #cce8d4; border-radius: 12px;
+      padding: 12px; display: flex; flex-direction: column; align-items: center;
+      gap: 7px; min-height: 130px; cursor: pointer; transition: all 0.15s;
+    }
+    .img-slot.filled { border-style: solid; border-color: var(--wa-green); }
+    .img-slot:active { transform: scale(0.98); }
+
+    .img-slot-thumb {
+      width: 100%; height: 60px; border-radius: 8px;
+      overflow: hidden; background: #f0f4f0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-slot-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .img-slot-thumb-placeholder { font-size: 24px; color: #ccc; }
+
+    .img-slot-name { font-size: 11px; font-weight: 700; color: var(--text); text-align: center; }
+    .img-slot-empty { font-size: 11px; color: #bbb; text-align: center; }
+
+    .img-slot-actions { display: flex; gap: 5px; width: 100%; }
+    .img-slot-btn {
+      flex: 1; padding: 6px 4px; border-radius: 7px;
+      border: 1.5px solid var(--border); background: white;
+      font-size: 11px; font-weight: 700; color: #555; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; text-align: center;
+      transition: all 0.15s;
+    }
+    .img-slot-btn:active { background: #f0fdf4; border-color: var(--wa-green); }
+    .img-slot-btn.danger:active { background: #fff5f5; border-color: var(--danger); }
+
+    /* Template settings */
+    .tpl-item {
+      background: white; border-radius: 12px; padding: 13px 15px;
+      border: 1.5px solid var(--border); margin-bottom: 9px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .tpl-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .tpl-item-name { font-size: 13px; font-weight: 700; }
+    .tpl-item-actions { display: flex; gap: 6px; }
+    .tpl-action-btn {
+      width: 28px; height: 28px; border-radius: 7px;
+      border: 1.5px solid var(--border); background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; cursor: pointer; transition: all 0.15s;
+    }
+    .tpl-action-btn:active { background: #f0fdf4; border-color: var(--wa-green); }
+    .tpl-action-btn.del:active { background: #fff5f5; border-color: var(--danger); }
+    .tpl-item-cat { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #dff2e8; color: var(--wa-dark); font-weight: 700; display: inline-block; margin-bottom: 4px; }
+    .tpl-item-msg { font-size: 11px; color: var(--muted); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    .add-tpl-btn {
+      width: 100%; padding: 13px; border-radius: 12px;
+      background: var(--wa-green); color: white; border: none;
+      font-size: 13px; font-weight: 800; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-bottom: 16px; transition: all 0.15s;
+    }
+    .add-tpl-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+    /* ---- Sheet (bottom slide-up panel) ---- */
+    .sheet-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 200; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .sheet-overlay.show { opacity: 1; pointer-events: all; }
+
+    .sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-radius: 20px 20px 0 0;
+      padding: 20px 18px calc(20px + var(--safe-bottom));
+      z-index: 201; transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34, 1.1, 0.64, 1);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .sheet.show { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 40px; height: 4px; border-radius: 2px;
+      background: #e0e0e0; margin: 0 auto 18px;
+    }
+    .sheet-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 16px; }
+
+    /* Form fields inside sheet */
+    .field-group { margin-bottom: 13px; }
+    .field-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; display: block; }
+    .field-input, .field-textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 11px 13px; font-size: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text);
+      outline: none; background: #fafafa; transition: border-color 0.15s;
+    }
+    .field-input:focus, .field-textarea:focus { border-color: var(--wa-green); background: white; }
+    .field-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+    .field-hint { font-size: 10px; color: #aaa; margin-top: 4px; }
+
+    .img-upload-zone {
+      width: 100%; height: 100px; border: 2px dashed #cce8d4;
+      border-radius: 12px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 7px; cursor: pointer; transition: all 0.15s;
+      background: #fafafa; font-size: 12px; color: #888; font-weight: 600;
+    }
+    .img-upload-zone:active { border-color: var(--wa-green); background: #f0fdf4; }
+    .img-upload-zone.has-img { padding: 0; overflow: hidden; border-style: solid; border-color: var(--wa-green); }
+    .img-upload-zone.has-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    #sheet-file-input { display: none; }
+    #sheet-file-info { font-size: 11px; color: var(--wa-dark); background: #e8faf0; border-radius: 7px; padding: 6px 10px; display: none; margin-top: 6px; }
+
+    .sheet-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .sheet-btn {
+      flex: 1; padding: 13px; border-radius: 12px;
+      font-size: 13px; font-weight: 800; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; border: none; transition: all 0.15s;
+    }
+    .sheet-btn.primary { background: var(--wa-green); color: white; }
+    .sheet-btn.secondary { background: #f0f0f0; color: #555; }
+    .sheet-btn:active { opacity: 0.8; transform: scale(0.98); }
+
+    /* ---- Bottom nav ---- */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid var(--border);
+      display: flex; padding-bottom: var(--safe-bottom);
+      z-index: 99; box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    }
+    .nav-btn {
+      flex: 1; padding: 12px 8px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      cursor: pointer; border: none; background: none;
+      font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
+    }
+    .nav-btn .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-btn .nav-label { font-size: 10px; font-weight: 700; color: var(--muted); }
+    .nav-btn.active .nav-label { color: var(--wa-green); }
+    .nav-btn.active .nav-icon { filter: drop-shadow(0 0 4px rgba(37,211,102,0.5)); }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed; bottom: calc(70px + var(--safe-bottom));
+      left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1a1a1a; color: white; padding: 10px 18px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      white-space: nowrap; opacity: 0; pointer-events: none;
+      transition: all 0.25s; z-index: 500;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- Scrollable content above fixed nav ---- */
+    .screen { padding-bottom: calc(80px + var(--safe-bottom)); }
+
+    /* ---- Empty state ---- */
+    .empty-state {
+      text-align: center; padding: 32px 20px;
+      background: white; border-radius: var(--radius);
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      border: 1.5px dashed var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<input type="file" id="sheet-file-input" accept="image/*" />
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <svg class="topbar-icon" viewBox="0 0 24 24">
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.406A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="white"/>
+      <path d="M17.003 14.611c-.274-.137-1.62-.799-1.871-.891-.25-.09-.432-.137-.614.138-.182.274-.706.891-.865 1.074-.16.182-.319.205-.593.068-.274-.137-1.156-.426-2.202-1.358-.814-.726-1.364-1.622-1.524-1.896-.16-.274-.017-.422.12-.559.123-.122.274-.319.411-.478.137-.16.182-.274.274-.456.09-.183.046-.342-.023-.479-.068-.137-.614-1.48-.841-2.027-.222-.532-.447-.46-.614-.468-.16-.007-.342-.009-.524-.009-.182 0-.479.068-.73.342-.25.274-.957.936-.957 2.28 0 1.342.98 2.639 1.117 2.821.137.183 1.929 2.946 4.674 4.132.653.282 1.163.45 1.56.576.655.208 1.252.178 1.723.108.526-.078 1.62-.662 1.849-1.302.228-.64.228-1.188.16-1.302-.068-.114-.25-.182-.524-.319z" fill="#25D366"/>
+    </svg>
+    <div>
+      <div class="topbar-title">WA Quick Reach</div>
+      <div class="topbar-sub">Send templates fast</div>
+    </div>
+  </div>
+</div>
+
+<!-- SEND SCREEN -->
+<div class="screen active" id="screen-send">
+
+  <div class="phone-hero">
+    <div class="phone-hero-title">Phone Number</div>
+    <div class="phone-input-wrap">
+      <input type="tel" class="phone-input" id="phone-input" placeholder="Paste or type number" inputmode="numeric" />
+      <button class="paste-btn" id="paste-btn">
+        <span>&#128203;</span> Paste
+      </button>
+    </div>
+    <div class="name-amount-row">
+      <div class="na-field">
+        <div class="na-label">Name</div>
+        <input type="text" class="na-input" id="name-input" placeholder="Contact name" />
+      </div>
+      <div class="na-field">
+        <div class="na-label">Amount</div>
+        <input type="text" class="na-input" id="amount-input" placeholder="Balance / due" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" id="tpl-section-label">Choose Template</div>
+  <div class="cat-scroll" id="cat-scroll"></div>
+  <div class="template-list" id="template-list"></div>
+
+  <div id="img-section" style="display:none">
+    <div class="section-label">Attach Image <span style="font-size:10px;color:#aaa;font-weight:500;text-transform:none">(tap to select, tap again to remove)</span></div>
+    <div class="img-picker-row" id="img-picker-row"></div>
+    <div class="img-status" id="img-status">
+      <span>&#128247;</span>
+      <span>Image copied to clipboard - press <strong>Ctrl+V</strong> in WhatsApp to paste</span>
+    </div>
+  </div>
+
+  <div class="msg-preview-wrap" id="msg-preview-wrap" style="display:none">
+    <div class="msg-preview-label">Message Preview - tap to edit</div>
+    <textarea id="msg-textarea" rows="4"></textarea>
+  </div>
+
+  <button class="send-btn" id="send-btn" disabled>
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.406A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="white"/><path d="M17.003 14.611c-.274-.137-1.62-.799-1.871-.891-.25-.09-.432-.137-.614.138-.182.274-.706.891-.865 1.074-.16.182-.319.205-.593.068-.274-.137-1.156-.426-2.202-1.358-.814-.726-1.364-1.622-1.524-1.896-.16-.274-.017-.422.12-.559.123-.122.274-.319.411-.478.137-.16.182-.274.274-.456.09-.183.046-.342-.023-.479-.068-.137-.614-1.48-.841-2.027-.222-.532-.447-.46-.614-.468-.16-.007-.342-.009-.524-.009-.182 0-.479.068-.73.342-.25.274-.957.936-.957 2.28 0 1.342.98 2.639 1.117 2.821.137.183 1.929 2.946 4.674 4.132.653.282 1.163.45 1.56.576.655.208 1.252.178 1.723.108.526-.078 1.62-.662 1.849-1.302.228-.64.228-1.188.16-1.302-.068-.114-.25-.182-.524-.319z" fill="#25D366"/></svg>
+    <span id="send-label">Open in WhatsApp</span>
+  </button>
+
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div class="screen" id="screen-settings">
+
+  <div class="settings-section">
+    <div class="settings-section-title">Image Library</div>
+    <div class="img-slots-grid" id="img-slots-grid"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Message Templates</div>
+    <button class="add-tpl-btn" id="add-tpl-btn">+ Add Template</button>
+    <div id="tpl-settings-list"></div>
+  </div>
+
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <button class="nav-btn active" data-screen="send" id="nav-send">
+    <span class="nav-icon">&#128172;</span>
+    <span class="nav-label">Send</span>
+  </button>
+  <button class="nav-btn" data-screen="settings" id="nav-settings">
+    <span class="nav-icon">&#9881;&#65039;</span>
+    <span class="nav-label">Settings</span>
+  </button>
+</div>
+
+<!-- Bottom sheet overlay -->
+<div class="sheet-overlay" id="sheet-overlay"></div>
+
+<!-- Sheet: Image upload -->
+<div class="sheet" id="sheet-img">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-img-title">Upload Image</div>
+  <div class="field-group">
+    <label class="field-label">Label</label>
+    <input type="text" class="field-input" id="si-label" placeholder="e.g. QR Code, Menu, Offer" maxlength="20" />
+  </div>
+  <div class="field-group">
+    <label class="field-label">Image</label>
+    <div class="img-upload-zone" id="si-drop-zone">
+      <span style="font-size:28px">&#128247;</span>
+      <span>Tap to choose from gallery</span>
+    </div>
+    <div id="sheet-file-info"></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="sheet-btn secondary" id="si-cancel">Cancel</button>
+    <button class="sheet-btn primary" id="si-save">Save Image</button>
+  </div>
+</div>
+
+<!-- Sheet: Template add/edit -->
+<div class="sheet" id="sheet-tpl">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-tpl-title">Add Template</div>
+  <div class="field-group">
+    <label class="field-label">Template Name</label>
+    <input type="text" class="field-input" id="st-name" placeholder="e.g. Balance Reminder" />
+  </div>
+  <div class="field-group">
+    <label class="field-label">Category</label>
+    <input type="text" class="field-input" id="st-cat" placeholder="e.g. Reminder, Sales, Follow Up" />
+  </div>
+  <div class="field-group">
+    <label class="field-label">Message</label>
+    <textarea class="field-textarea" id="st-msg" placeholder="Hi {{name}}, your balance is {{amount}}..."></textarea>
+    <div class="field-hint">Variables: {{name}} {{phone}} {{amount}}</div>
+  </div>
+  <div class="sheet-actions">
+    <button class="sheet-btn secondary" id="st-cancel">Cancel</button>
+    <button class="sheet-btn primary" id="st-save">Save Template</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// WhatsApp Quick Reach - PWA App JS
+// =====================================================================
+
+const DEFAULT_TEMPLATES = [
+  { name: 'Intro - General',  category: 'Introduction', message: 'Hi {{name}}, I came across your contact and wanted to reach out. Would love to connect!' },
+  { name: 'Follow Up',        category: 'Follow Up',    message: 'Hi {{name}}, just following up on our earlier conversation. Do you have a few minutes to chat?' },
+  { name: 'Balance Reminder', category: 'Reminder',     message: 'Hi {{name}}, your current balance is {{amount}}. Kindly settle at your earliest convenience.' },
+  { name: 'Service Offer',    category: 'Sales',        message: 'Hello {{name}}, we have a special offer tailored for you. Can I share more details?' },
+  { name: 'Thank You',        category: 'Post-Sale',    message: 'Thank you {{name}}! It was a pleasure working with you. Feel free to reach out anytime.' },
+  { name: 'Support Check-in', category: 'Support',      message: 'Hi {{name}}, wanted to check if everything is going smoothly. Let me know if you need any help!' },
+];
+
+// ---- State ----
+let templates    = [];
+let imageLibrary = [null, null, null, null];
+let activeCat    = 'All';
+let selectedTplIndex  = -1;
+let selectedImgIndex  = -1;
+let editingTplIndex   = -1;
+let editingImgSlot    = -1;
+let pendingImgDataUrl = '';
+let pendingImgSize    = '';
+
+// ---- Storage (localStorage - works offline) ----
+function loadData() {
+  try {
+    const t = localStorage.getItem('waqr_templates');
+    const i = localStorage.getItem('waqr_images');
+    templates    = t ? JSON.parse(t) : DEFAULT_TEMPLATES;
+    imageLibrary = i ? JSON.parse(i) : [null,null,null,null];
+    while (imageLibrary.length < 4) imageLibrary.push(null);
+  } catch(e) {
+    templates    = DEFAULT_TEMPLATES;
+    imageLibrary = [null,null,null,null];
+  }
+}
+
+function saveTemplates() { localStorage.setItem('waqr_templates', JSON.stringify(templates)); }
+function saveImages()    { localStorage.setItem('waqr_images',    JSON.stringify(imageLibrary)); }
+
+// ---- Toast ----
+function toast(msg, duration = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ---- Bottom sheet ----
+function openSheet(id) {
+  document.getElementById('sheet-overlay').classList.add('show');
+  document.getElementById(id).classList.add('show');
+}
+function closeSheet(id) {
+  document.getElementById('sheet-overlay').classList.remove('show');
+  document.getElementById(id).classList.remove('show');
+}
+
+document.getElementById('sheet-overlay').addEventListener('click', () => {
+  closeSheet('sheet-img');
+  closeSheet('sheet-tpl');
+});
+
+// ---- Screen nav ----
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const screen = btn.getAttribute('data-screen');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + screen).classList.add('active');
+    btn.classList.add('active');
+    if (screen === 'settings') renderSettingsScreen();
+  });
+});
+
+// ---- Fill template ----
+function fillTpl(tpl, name, phone, amount) {
+  return tpl
+    .replace(/\{\{name\}\}/gi,    name   || 'there')
+    .replace(/\{\{phone\}\}/gi,   phone  || '')
+    .replace(/\{\{amount\}\}/gi,  amount || '')
+    .replace(/\{\{balance\}\}/gi, amount || '');
+}
+
+// =====================================================================
+// SEND SCREEN
+// =====================================================================
+
+function renderSendScreen() {
+  renderCategories();
+  renderTemplateList();
+  renderImgPicker();
+}
+
+// Paste button
+document.getElementById('paste-btn').addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    const digits = text.replace(/\D/g, '');
+    if (digits.length >= 10) {
+      document.getElementById('phone-input').value = digits.slice(-10);
+      toast('Number pasted!');
+    } else if (text.trim()) {
+      document.getElementById('phone-input').value = text.trim();
+      toast('Pasted from clipboard');
+    } else {
+      toast('Clipboard is empty');
+    }
+  } catch(e) {
+    toast('Tap the number field and long-press Paste');
+  }
+});
+
+// Live preview update when name/amount changes
+['name-input','amount-input'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if (selectedTplIndex >= 0) updateMsgPreview();
+  });
+});
+
+function updateMsgPreview() {
+  if (selectedTplIndex < 0) return;
+  const phone  = cleanPhone(document.getElementById('phone-input').value);
+  const name   = document.getElementById('name-input').value.trim();
+  const amount = document.getElementById('amount-input').value.trim();
+  document.getElementById('msg-textarea').value = fillTpl(templates[selectedTplIndex].message, name, phone, amount);
+}
+
+function cleanPhone(raw) {
+  let d = raw.replace(/\D/g,'');
+  if (d.length === 10) d = '91' + d;
+  if (d.length === 11 && d.startsWith('0')) d = '91' + d.slice(1);
+  return d;
+}
+
+function renderCategories() {
+  const cats = ['All', ...new Set(templates.map(t => t.category))];
+  const wrap = document.getElementById('cat-scroll');
+  wrap.innerHTML = cats.map(c =>
+    `<button class="cat-chip ${c === activeCat ? 'active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+  wrap.querySelectorAll('.cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCat = btn.getAttribute('data-cat');
+      renderCategories();
+      renderTemplateList();
+    });
+  });
+}
+
+function renderTemplateList() {
+  const list = document.getElementById('template-list');
+  const filtered = templates.filter((t, i) => {
+    t._origIndex = i;
+    return activeCat === 'All' || t.category === activeCat;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">No templates in this category</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((t, fi) => {
+    const oi = templates.indexOf(t);
+    const phone  = cleanPhone(document.getElementById('phone-input').value);
+    const name   = document.getElementById('name-input').value.trim();
+    const amount = document.getElementById('amount-input').value.trim();
+    return `
+      <div class="template-card ${selectedTplIndex === oi ? 'selected' : ''}" data-orig-index="${oi}">
+        <div class="tc-top">
+          <span class="tc-name">${esc(t.name)}</span>
+          <span class="tc-cat">${esc(t.category)}</span>
+        </div>
+        <div class="tc-preview">${esc(fillTpl(t.message, name, phone, amount))}</div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.template-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const oi = parseInt(card.getAttribute('data-orig-index'));
+      selectedTplIndex = oi;
+      renderTemplateList();
+      const phone  = cleanPhone(document.getElementById('phone-input').value);
+      const name   = document.getElementById('name-input').value.trim();
+      const amount = document.getElementById('amount-input').value.trim();
+      document.getElementById('msg-textarea').value = fillTpl(templates[oi].message, name, phone, amount);
+      document.getElementById('msg-preview-wrap').style.display = 'block';
+      document.getElementById('send-btn').disabled = false;
+      updateSendLabel();
+      // Scroll to preview
+      setTimeout(() => document.getElementById('msg-preview-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    });
+  });
+}
+
+function renderImgPicker() {
+  const filled = imageLibrary.filter(img => img && img.dataUrl);
+  const section = document.getElementById('img-section');
+  if (!filled.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const row = document.getElementById('img-picker-row');
+  row.innerHTML = imageLibrary.map((img, i) => {
+    if (!img || !img.dataUrl) return '';
+    return `
+      <div class="img-thumb-card ${selectedImgIndex === i ? 'selected' : ''}" data-img-index="${i}">
+        <img src="${esc(img.dataUrl)}" alt="${esc(img.label)}" />
+        <div class="img-thumb-name">${esc(img.label)}</div>
+        <div class="img-tick">&#10003;</div>
+      </div>`;
+  }).join('');
+
+  row.querySelectorAll('.img-thumb-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.getAttribute('data-img-index'));
+      if (selectedImgIndex === idx) {
+        selectedImgIndex = -1;
+      } else {
+        selectedImgIndex = idx;
+      }
+      renderImgPicker();
+      document.getElementById('img-status').classList.toggle('show', selectedImgIndex >= 0);
+      updateSendLabel();
+    });
+  });
+}
+
+function updateSendLabel() {
+  const lbl = document.getElementById('send-label');
+  lbl.textContent = selectedImgIndex >= 0 ? 'Copy Image + Open WhatsApp' : 'Open in WhatsApp';
+}
+
+// Copy base64 dataUrl as real image to clipboard
+async function copyDataUrlToClipboard(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          resolve();
+        } catch(e) { reject(e); }
+      }, 'image/png');
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+// Send button
+document.getElementById('send-btn').addEventListener('click', async () => {
+  const rawPhone = document.getElementById('phone-input').value.trim();
+  const phone    = cleanPhone(rawPhone);
+  const msg      = document.getElementById('msg-textarea').value.trim();
+
+  if (!phone || phone.length < 12) { toast('Enter a valid phone number'); return; }
+  if (!msg) { toast('Select a template first'); return; }
+
+  const btn = document.getElementById('send-btn');
+  const lbl = document.getElementById('send-label');
+  btn.disabled = true;
+
+  if (selectedImgIndex >= 0 && imageLibrary[selectedImgIndex]?.dataUrl) {
+    lbl.textContent = 'Copying image...';
+    try {
+      await copyDataUrlToClipboard(imageLibrary[selectedImgIndex].dataUrl);
+      lbl.textContent = 'Copied! Opening WhatsApp...';
+    } catch(e) {
+      lbl.textContent = 'Opening WhatsApp...';
+    }
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  btn.disabled = false;
+  updateSendLabel();
+});
+
+// =====================================================================
+// SETTINGS SCREEN
+// =====================================================================
+
+function renderSettingsScreen() {
+  renderImgSlots();
+  renderTplSettings();
+}
+
+function renderImgSlots() {
+  const grid = document.getElementById('img-slots-grid');
+  grid.innerHTML = imageLibrary.slice(0,4).map((img, i) => {
+    if (img && img.dataUrl) {
+      return `
+        <div class="img-slot filled">
+          <div class="img-slot-thumb"><img src="${esc(img.dataUrl)}" alt="${esc(img.label)}" /></div>
+          <div class="img-slot-name">${esc(img.label)}</div>
+          <div class="img-slot-actions">
+            <button class="img-slot-btn" data-action="edit" data-slot="${i}">Edit</button>
+            <button class="img-slot-btn danger" data-action="del" data-slot="${i}">Remove</button>
+          </div>
+        </div>`;
+    } else {
+      return `
+        <div class="img-slot">
+          <div class="img-slot-thumb"><span class="img-slot-thumb-placeholder">&#43;</span></div>
+          <div class="img-slot-empty">Empty slot ${i+1}</div>
+          <div class="img-slot-actions">
+            <button class="img-slot-btn" data-action="add" data-slot="${i}" style="flex:1">Upload</button>
+          </div>
+        </div>`;
+    }
+  }).join('');
+
+  grid.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-action');
+      const slot   = parseInt(btn.getAttribute('data-slot'));
+      if (action === 'add' || action === 'edit') openImgSheet(slot);
+      if (action === 'del') removeImg(slot);
+    });
+  });
+}
+
+function renderTplSettings() {
+  const list = document.getElementById('tpl-settings-list');
+  if (!templates.length) {
+    list.innerHTML = `<div class="empty-state">No templates yet</div>`;
+    return;
+  }
+  list.innerHTML = templates.map((t, i) => `
+    <div class="tpl-item">
+      <div class="tpl-item-top">
+        <span class="tpl-item-name">${esc(t.name)}</span>
+        <div class="tpl-item-actions">
+          <button class="tpl-action-btn" data-action="up"   data-index="${i}" ${i===0?'disabled':''}>&#8593;</button>
+          <button class="tpl-action-btn" data-action="down" data-index="${i}" ${i===templates.length-1?'disabled':''}>&#8595;</button>
+          <button class="tpl-action-btn" data-action="edit" data-index="${i}">&#9998;</button>
+          <button class="tpl-action-btn del" data-action="del" data-index="${i}">&#128465;</button>
+        </div>
+      </div>
+      <span class="tpl-item-cat">${esc(t.category)}</span>
+      <div class="tpl-item-msg">${esc(t.message)}</div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-action');
+      const index  = parseInt(btn.getAttribute('data-index'));
+      if (action === 'edit') openTplSheet(index);
+      if (action === 'del')  deleteTpl(index);
+      if (action === 'up')   moveTpl(index, -1);
+      if (action === 'down') moveTpl(index,  1);
+    });
+  });
+}
+
+// Add template button
+document.getElementById('add-tpl-btn').addEventListener('click', () => openTplSheet(-1));
+
+function openTplSheet(index) {
+  editingTplIndex = index;
+  const t = index >= 0 ? templates[index] : null;
+  document.getElementById('sheet-tpl-title').textContent = t ? 'Edit Template' : 'Add Template';
+  document.getElementById('st-name').value = t ? t.name    : '';
+  document.getElementById('st-cat').value  = t ? t.category: '';
+  document.getElementById('st-msg').value  = t ? t.message : '';
+  openSheet('sheet-tpl');
+  setTimeout(() => document.getElementById('st-name').focus(), 350);
+}
+
+document.getElementById('st-cancel').addEventListener('click', () => closeSheet('sheet-tpl'));
+document.getElementById('st-save').addEventListener('click', () => {
+  const name = document.getElementById('st-name').value.trim();
+  const cat  = document.getElementById('st-cat').value.trim();
+  const msg  = document.getElementById('st-msg').value.trim();
+  if (!name) { toast('Name is required'); return; }
+  if (!cat)  { toast('Category is required'); return; }
+  if (!msg)  { toast('Message is required'); return; }
+  const entry = { name, category: cat, message: msg };
+  const wasEditing = editingTplIndex >= 0;
+  if (wasEditing) templates[editingTplIndex] = entry;
+  else templates.push(entry);
+  saveTemplates();
+  closeSheet('sheet-tpl');
+  renderTplSettings();
+  renderSendScreen();
+  toast(wasEditing ? 'Template updated!' : 'Template saved!');
+});
+
+function deleteTpl(index) {
+  if (!confirm(`Delete "${templates[index].name}"?`)) return;
+  templates.splice(index, 1);
+  if (selectedTplIndex === index) selectedTplIndex = -1;
+  saveTemplates();
+  renderTplSettings();
+  renderSendScreen();
+  toast('Template deleted');
+}
+
+function moveTpl(index, dir) {
+  const ni = index + dir;
+  if (ni < 0 || ni >= templates.length) return;
+  [templates[index], templates[ni]] = [templates[ni], templates[index]];
+  if (selectedTplIndex === index) selectedTplIndex = ni;
+  saveTemplates();
+  renderTplSettings();
+  renderSendScreen();
+}
+
+// ---- Image sheet ----
+function openImgSheet(slot) {
+  editingImgSlot    = slot;
+  pendingImgDataUrl = '';
+  pendingImgSize    = '';
+  const existing = imageLibrary[slot];
+  document.getElementById('sheet-img-title').textContent = existing ? 'Replace Image' : 'Upload Image';
+  document.getElementById('si-label').value = existing ? existing.label : '';
+  document.getElementById('sheet-file-info').style.display = 'none';
+  document.getElementById('sheet-file-info').textContent = '';
+  const dz = document.getElementById('si-drop-zone');
+  dz.classList.remove('has-img');
+  dz.innerHTML = '<span style="font-size:28px">&#128247;</span><span>Tap to choose from gallery</span>';
+  if (existing && existing.dataUrl) {
+    pendingImgDataUrl = existing.dataUrl;
+    pendingImgSize    = existing.size || '';
+    dz.classList.add('has-img');
+    dz.innerHTML = `<img src="${esc(existing.dataUrl)}" alt="current" />`;
+  }
+  openSheet('sheet-img');
+}
+
+document.getElementById('si-drop-zone').addEventListener('click', () => {
+  document.getElementById('sheet-file-input').click();
+});
+
+document.getElementById('sheet-file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) handleImgFile(file);
+  e.target.value = '';
+});
+
+function handleImgFile(file) {
+  if (!file.type.startsWith('image/')) { toast('Select an image file'); return; }
+  if (file.size > 3 * 1024 * 1024) { toast('Max image size is 3MB'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    pendingImgDataUrl = ev.target.result;
+    pendingImgSize    = formatBytes(file.size);
+    const dz = document.getElementById('si-drop-zone');
+    dz.classList.add('has-img');
+    dz.innerHTML = `<img src="${pendingImgDataUrl}" alt="preview" />`;
+    const info = document.getElementById('sheet-file-info');
+    info.style.display = 'block';
+    info.textContent = `${file.name} - ${pendingImgSize}`;
+    if (!document.getElementById('si-label').value.trim()) {
+      document.getElementById('si-label').value = file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').slice(0,20);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('si-cancel').addEventListener('click', () => closeSheet('sheet-img'));
+document.getElementById('si-save').addEventListener('click', () => {
+  const label = document.getElementById('si-label').value.trim();
+  if (!label)          { toast('Label is required'); return; }
+  if (!pendingImgDataUrl) { toast('Please choose an image'); return; }
+  imageLibrary[editingImgSlot] = { label, dataUrl: pendingImgDataUrl, size: pendingImgSize };
+  saveImages();
+  closeSheet('sheet-img');
+  renderImgSlots();
+  renderImgPicker();
+  toast('Image saved!');
+});
+
+function removeImg(slot) {
+  if (!confirm('Remove this image?')) return;
+  imageLibrary[slot] = null;
+  if (selectedImgIndex === slot) selectedImgIndex = -1;
+  saveImages();
+  renderImgSlots();
+  renderImgPicker();
+  toast('Image removed');
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Init ----
+loadData();
+renderSendScreen();
+
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
